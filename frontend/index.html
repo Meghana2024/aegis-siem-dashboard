@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Guardian | Enterprise Network SIEM & Threat Detection</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-shield-halved logo-icon"></i>
+                <div class="logo-text">
+                    <h1>AEGIS GUARDIAN</h1>
+                    <span>ENTERPRISE SIEM & THREAT DETECTION</span>
+                </div>
+            </div>
+            <div class="system-status">
+                <div class="status-indicator online">
+                    <span class="pulse"></span>
+                    <span class="status-lbl">SYS STATE: ONLINE</span>
+                </div>
+                <div class="threat-level-badge" id="global-threat-level">
+                    THREAT LEVEL: LOW
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-network-wired text-cyan"></i></div>
+                <div class="stat-info">
+                    <span class="stat-val" id="stat-packets">0</span>
+                    <span class="stat-lbl">PACKETS ANALYZED</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation text-red"></i></div>
+                <div class="stat-info">
+                    <span class="stat-val" id="stat-alerts">0</span>
+                    <span class="stat-lbl">DETECTIONS BLOCK</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-bolt text-yellow"></i></div>
+                <div class="stat-info">
+                    <span class="stat-val" id="stat-pps">0</span>
+                    <span class="stat-lbl">FLOW THROUGHPUT (P/S)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-gauge-high text-purple"></i></div>
+                <div class="stat-info">
+                    <span class="stat-val" id="stat-sim">SIMULATION</span>
+                    <span class="stat-lbl">SANDBOX ENGINE</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="dashboard-tab">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </button>
+            <button class="tab-btn" data-tab="alerts-tab">
+                <i class="fa-solid fa-bell"></i> Incidents Feed
+            </button>
+            <button class="tab-btn" data-tab="scanner-tab">
+                <i class="fa-solid fa-radar"></i> Port Scanner
+            </button>
+            <button class="tab-btn" data-tab="map-tab">
+                <i class="fa-solid fa-earth-americas"></i> Threat Map
+            </button>
+            <button class="tab-btn" data-tab="settings-tab">
+                <i class="fa-solid fa-sliders"></i> IDS Rules & Sandbox
+            </button>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- 1. DASHBOARD TAB -->
+            <div class="tab-content active" id="dashboard-tab">
+                <div class="dashboard-grid">
+                    <!-- Left: Charts -->
+                    <div class="dashboard-charts">
+                        <div class="panel-card chart-panel">
+                            <h3><i class="fa-solid fa-wave-square"></i> Real-time Traffic Throughput</h3>
+                            <div class="chart-container">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-subgrid">
+                            <div class="panel-card chart-panel">
+                                <h3><i class="fa-solid fa-chart-pie"></i> Alert Classifications</h3>
+                                <div class="chart-container-sm">
+                                    <canvas id="alertPieChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="panel-card chart-panel">
+                                <h3><i class="fa-solid fa-circle-nodes"></i> Active Protocols</h3>
+                                <div class="chart-container-sm">
+                                    <canvas id="protocolBarChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Live Log -->
+                    <div class="panel-card stream-panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-terminal"></i> Live Packet Stream</h3>
+                            <div class="header-actions">
+                                <button class="action-btn text-cyan" id="pause-stream-btn"><i class="fa-solid fa-pause"></i> Pause</button>
+                                <button class="action-btn text-red" id="clear-stream-btn"><i class="fa-solid fa-trash"></i> Clear</button>
+                            </div>
+                        </div>
+                        <div class="packet-stream-container">
+                            <table class="cyber-table">
+                                <thead>
+                                    <tr>
+                                        <th>TIME</th>
+                                        <th>SRC IP</th>
+                                        <th>DST IP</th>
+                                        <th>PROTO</th>
+                                        <th>PORT</th>
+                                        <th>FLAGS</th>
+                                        <th>PAYLOAD</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="packet-stream-body">
+                                    <!-- Dynamic rows -->
+                                    <tr class="placeholder-row">
+                                        <td colspan="7">Awaiting packet stream logs...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ALERTS TAB -->
+            <div class="tab-content" id="alerts-tab">
+                <div class="panel-card full-panel">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-triangle-exclamation"></i> Security Incidents & Threat Feed</h3>
+                        <div class="header-actions">
+                            <button class="action-btn text-red" id="clear-alerts-btn"><i class="fa-solid fa-radiation"></i> Purge Alerts</button>
+                        </div>
+                    </div>
+                    <div class="alerts-feed-wrapper">
+                        <div class="alerts-feed" id="alerts-feed-container">
+                            <!-- Dynamic Alerts -->
+                            <div class="empty-feed-placeholder">
+                                <i class="fa-solid fa-circle-check text-green"></i>
+                                <p>No security anomalies detected. System secure.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. SCANNER TAB -->
+            <div class="tab-content" id="scanner-tab">
+                <div class="scanner-layout">
+                    <!-- Left: Control Panel -->
+                    <div class="panel-card scanner-controls">
+                        <h3><i class="fa-solid fa-magnifying-glass-location"></i> Vulnerability Audit Engine</h3>
+                        <p class="section-desc">Perform scanning and vulnerability assessment on targets in local environment or pre-configured subnets.</p>
+                        <form id="scan-form" class="cyber-form">
+                            <div class="form-group">
+                                <label for="scan-ip">Target IP Address</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="scan-ip" placeholder="e.g. 192.168.1.10" value="192.168.1.10" required>
+                                    <button type="submit" class="cyber-btn" id="run-scan-btn">
+                                        <i class="fa-solid fa-radar fa-spin"></i> INITIALIZE SCAN
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="demo-targets">
+                                <span>Quick Target Presets:</span>
+                                <div class="preset-buttons">
+                                    <button type="button" class="preset-btn" data-ip="192.168.1.10">Vulnerable Local Server (192.168.1.10)</button>
+                                    <button type="button" class="preset-btn" data-ip="127.0.0.1">Local Loopback (127.0.0.1)</button>
+                                    <button type="button" class="preset-btn" data-ip="192.168.1.25">Secure Client Workstation (192.168.1.25)</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="scan-status-panel hidden" id="scan-status-panel">
+                            <div class="scan-progress-bar">
+                                <div class="scan-progress-fill" id="scan-progress-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="scan-status-lbl">
+                                <span id="scan-status-text">Scanning targets...</span>
+                                <span id="scan-percent-text">0%</span>
+                            </div>
+                        </div>
+
+                        <!-- Scan Info and Metrics -->
+                        <div class="vuln-summary-panel hidden" id="vuln-summary-panel">
+                            <h4>Target Audit Summary</h4>
+                            <div class="vuln-badges-grid">
+                                <div class="severity-badge-card critical">
+                                    <span class="badge-count" id="count-critical">0</span>
+                                    <span class="badge-lbl">Critical</span>
+                                </div>
+                                <div class="severity-badge-card high">
+                                    <span class="badge-count" id="count-high">0</span>
+                                    <span class="badge-lbl">High</span>
+                                </div>
+                                <div class="severity-badge-card medium">
+                                    <span class="badge-count" id="count-medium">0</span>
+                                    <span class="badge-lbl">Medium</span>
+                                </div>
+                                <div class="severity-badge-card low">
+                                    <span class="badge-count" id="count-low">0</span>
+                                    <span class="badge-lbl">Low</span>
+                                </div>
+                            </div>
+                            <div class="vuln-cvss-chart-container">
+                                <canvas id="vulnSeverityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Results Panel -->
+                    <div class="panel-card scanner-results">
+                        <h3><i class="fa-solid fa-list-check"></i> Audit Scan Findings</h3>
+                        <div class="scan-results-tabs">
+                            <button class="results-tab-btn active" data-res-tab="ports-res">Open Ports</button>
+                            <button class="results-tab-btn" data-res-tab="vulns-res">Identified Vulnerabilities</button>
+                        </div>
+                        <div class="scanner-results-content">
+                            <!-- Ports List -->
+                            <div class="results-subpanel active" id="ports-res">
+                                <table class="cyber-table">
+                                    <thead>
+                                        <tr>
+                                            <th>PORT</th>
+                                            <th>SERVICE</th>
+                                            <th>STATE</th>
+                                            <th>SERVICE BANNER</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scan-ports-body">
+                                        <tr>
+                                            <td colspan="4" class="no-data">Initiate target scan to see open ports.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Vulns List -->
+                            <div class="results-subpanel" id="vulns-res">
+                                <div class="vuln-list" id="scan-vuln-list">
+                                    <div class="no-data-msg">
+                                        <i class="fa-solid fa-shield-virus"></i>
+                                        <p>No vulnerabilities found or target not scanned yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. MAP TAB -->
+            <div class="tab-content" id="map-tab">
+                <div class="panel-card full-panel">
+                    <h3><i class="fa-solid fa-earth-americas"></i> Global Threat Map (IDS Event Geolocation)</h3>
+                    <p class="section-desc">Visualizes real-time inbound attack telemetry geolocated by remote source IP addresses.</p>
+                    <div class="map-layout">
+                        <div class="map-container-wrapper">
+                            <!-- Custom 2D Vector-style Canvas Map -->
+                            <canvas id="threat-map-canvas"></canvas>
+                            <div class="map-overlay-coordinates" id="map-coords">CURSOR: OFF-MAP</div>
+                        </div>
+                        <div class="map-legend">
+                            <h4>Active Attacker Telemetry</h4>
+                            <div class="map-alert-list" id="map-telemetry-feed">
+                                <div class="telemetry-placeholder">No external attack signatures geolocated.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. SETTINGS & RULES TAB -->
+            <div class="tab-content" id="settings-tab">
+                <div class="settings-grid">
+                    <!-- Left: Simulator Controls -->
+                    <div class="panel-card">
+                        <h3><i class="fa-solid fa-bug"></i> Threat Simulator Sandbox</h3>
+                        <p class="section-desc">Generate synthetic cyberattacks to test IDS thresholds and verify frontend SIEM analytics.</p>
+                        <div class="simulator-actions">
+                            <div class="action-card">
+                                <div>
+                                    <h4>Simulate Distributed Denial of Service (DDoS)</h4>
+                                    <p>Spike bandwidth throughput and connection rate from external botnet IPs targeting HTTP port 80.</p>
+                                </div>
+                                <button class="sim-trigger-btn critical" data-attack="ddos">TRIGGER DDoS STORM</button>
+                            </div>
+                            <div class="action-card">
+                                <div>
+                                    <h4>Simulate Host Port Scan</h4>
+                                    <p>Launches rapid sequential connection attempts across port ranges (1-150) from external reconnaissance IP.</p>
+                                </div>
+                                <button class="sim-trigger-btn high" data-attack="port_scan">TRIGGER RECON SCAN</button>
+                            </div>
+                            <div class="action-card">
+                                <div>
+                                    <h4>Simulate SSH Brute-Force Connection</h4>
+                                    <p>Fires rapid failed authentications targeting SSH (Port 22) service, triggering connection frequency thresholds.</p>
+                                </div>
+                                <button class="sim-trigger-btn high" data-attack="brute_force">TRIGGER SSH BRUTE-FORCE</button>
+                            </div>
+                            <div class="action-card">
+                                <div>
+                                    <h4>Simulate Web Payload SQL Injection (SQLi)</h4>
+                                    <p>Sends malicious request vectors (UNION SELECT) targeting backend web endpoints to verify payload string signature IDS flags.</p>
+                                </div>
+                                <button class="sim-trigger-btn medium" data-attack="sqli">TRIGGER SQL INJECTION</button>
+                            </div>
+                            <div class="action-card clear-sim">
+                                <div>
+                                    <h4>Terminate Simulator Attacks</h4>
+                                    <p>Reset SIEM state and stop ongoing active attack packet injections.</p>
+                                </div>
+                                <button class="sim-trigger-btn default" data-attack="none">CLEAR ACTIVE ATTACKS</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: IDS Config -->
+                    <div class="panel-card">
+                        <h3><i class="fa-solid fa-gears"></i> Intrusion Detection Rules (IDS Configuration)</h3>
+                        <p class="section-desc">Adjust threshold parameters and toggle payload signature parsing rules dynamically.</p>
+                        <form id="ids-config-form" class="cyber-form">
+                            <div class="form-group">
+                                <label for="cfg-ddos-th">DDoS Threshold (Packets/5s per IP)</label>
+                                <input type="number" id="cfg-ddos-th" value="30" min="5" max="200">
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-scan-th">Port Scan Threshold (Distinct Ports/5s)</label>
+                                <input type="number" id="cfg-scan-th" value="10" min="3" max="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-bf-th">SSH Brute-Force Threshold (Tries/5s)</label>
+                                <input type="number" id="cfg-bf-th" value="5" min="2" max="20">
+                            </div>
+
+                            <hr class="cyber-hr">
+                            
+                            <h4>Payload Signatures Toggles</h4>
+                            <div class="toggles-grid">
+                                <label class="cyber-checkbox">
+                                    <input type="checkbox" id="cfg-sig-sqli" checked>
+                                    <span class="chk-custom"></span>
+                                    SQL Injection (SQLi) Detection
+                                </label>
+                                <label class="cyber-checkbox">
+                                    <input type="checkbox" id="cfg-sig-xss" checked>
+                                    <span class="chk-custom"></span>
+                                    Cross-Site Scripting (XSS) Detection
+                                </label>
+                                <label class="cyber-checkbox">
+                                    <input type="checkbox" id="cfg-sig-pt" checked>
+                                    <span class="chk-custom"></span>
+                                    Directory / Path Traversal Detection
+                                </label>
+                                <label class="cyber-checkbox">
+                                    <input type="checkbox" id="cfg-sig-dns" checked>
+                                    <span class="chk-custom"></span>
+                                    Malicious CnC DNS Query Detection
+                                </label>
+                            </div>
+
+                            <button type="submit" class="cyber-btn" style="margin-top: 1.5rem; width: 100%;">
+                                APPLY PARAMETERS
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>AEGIS GUARDIAN v1.4.0 • Built for Cybersecurity Academic Evaluation & SOC Operations Demonstrations</p>
+            <div class="engine-indicator">
+                <i class="fa-solid fa-server"></i> SIEM Engine: <span class="text-green" id="engine-status-lbl">ONLINE</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Alert Modal Template (Toast) -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
