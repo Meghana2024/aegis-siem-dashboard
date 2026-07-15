@@ -148,7 +148,7 @@ Provides an overview of the system, including real-time traffic statistics, netw
 
 Displays the distribution of detected security alerts and active network protocols monitored by the SIEM dashboard.
 
-![Alert Classification and Active Protocols](assets/screenshots/Alert%20Classification%20and%20Active%20Protocols.png)
+![Alert Classifications and Active Protocols](assets/screenshots/Alert%20Classifications%20and%20Active%20Protocols.png)
 
 ---
 
